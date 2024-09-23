@@ -1,0 +1,61 @@
+{% extends 'default.html' %}
+
+{% block content %}
+<h1 align="center"><b>Страница поиска объявлений и откликов</b></h1>
+<hr>
+
+    <form method="get" action="{% url 'search' %}">
+        {{ form.as_p }}
+        <input type="submit" class="form-button" value="Найти">
+    </form>
+    <hr>
+
+    {% if results %}
+        <h3>Результат:</h3>
+        <ul class="list-articles">
+            {% if form.cleaned_data.search_type == 'adverts' %}
+                {% for advert in results %}
+                    <li>
+                        <div class="article-panel">
+                            <p class="first">
+                                Категория: <a href="{{ advert.category.get_absolute_url }}">{{ advert.category.name }}</a> |
+                                автор: {{ advert.author.username|default:"неизвестен" }}</p>
+                                {% if advert.time_create == advert.time_update %}
+                                    <p class="last">дата: {{ advert.time_create|date:"d-m-Y H:i:s" }}</p>
+                                {% else %}
+                                    <p class="last">обновлено: {{ advert.time_update|date:"d-m-Y H:i:s" }}</p>
+                                {% endif %}
+                        </div>
+                        <h3>{{ advert.title }}</h3>
+                        {{ advert.preview }}
+                        <div class="clear"></div>
+                        <p class="link-read-post">
+                            <a href="{{ advert.get_absolute_url }}">Читать пост</a>
+                    </li>
+                {% endfor %}
+            {% elif form.cleaned_data.search_type == 'responses' %}
+                {% for response in results %}
+                    <li>
+                        <div class="article-panel">
+                            <p class="first">
+                                Автор: {{ response.author.username|default:"неизвестен" }}</p>
+                            <p class="last">дата: {{ response.time_create|date:"d-m-Y H:i:s" }}</p>
+                        </div>
+                        <p>Отклик на объявление:
+                            <b><i><a href=" {{ response.advert.get_absolute_url }}">{{ response.advert.title }}</a>
+                            </i></b></p>
+                        Содержание отклика: {{response.preview}}
+                        <div class="clear"></div>
+                        <p class="link-read-post">
+                            <a href="{{ response.get_absolute_url }}">Читать отклик</a>
+                    </li>
+                {% endfor %}
+            {% endif %}
+        </ul>
+    {% endif %}
+
+{% endblock %}
+
+{% block navigation %}
+    {% include "paginate.html" %}
+{% endblock %}

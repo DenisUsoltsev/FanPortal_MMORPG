@@ -1,0 +1,32 @@
+{% extends 'default.html' %}
+
+{% block content %}
+    <h1>Страница авторизованного пользователя {{ request.user.username }}</h1>
+    <br>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="profilePhoto">
+
+            {% if user.avatar %}
+                <p><img width="210" height="210" src="{{ user.avatar.url }}"></p>
+            {% else %}
+                <p><img width="210" height="210" src="{{ default_image }}"></p>
+            {% endif %}
+        </div>
+        <div class="form-error">{{ form.non_field_errors }}</div>
+        <div>
+            {% for f in form %}
+                <p align="left"><label class="form-label" for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }}</p>
+                <div class="form-error">{{ f.errors }}</div>
+            {% endfor %}
+
+            <br>
+            <p><button class="form-button" type="submit">Сохранить</button></p>
+        </div>
+    </form>
+
+    <hr>
+    <p><a href="{% url 'users:password_change' %}">Сменить пароль</a></p>
+
+{% endblock %}

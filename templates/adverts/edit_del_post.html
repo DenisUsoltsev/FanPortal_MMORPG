@@ -1,0 +1,43 @@
+{% extends 'default.html' %}
+
+{% block breadcrumbs %}
+    {% if request.user == post.author %}
+        {% if del_mode %}
+            <h2>Вы действительно хотите удалить данное объявление?</h2>
+            <hr>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% if request.user == post.author %}
+        {% if not del_mode %}
+            <h1>{{ title }}</h1>
+            <form action="" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.media }}
+                <div class="form-error">{{ form.non_field_errors }}</div>
+                {% for f in form %}
+                    <p><label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}</p>
+                    <div class="form-error">{{ f.errors }}</div>
+                {% endfor %}
+                <p>
+                    <button class="form-button" type="submit">Отправить</button>
+                    <a href="javascript:history.back()">Вернуться назад</a>
+                </p>
+            </form>
+        {% else %}
+            <h1>{{ post.title }}</h1>
+            {{ post.preview }}
+            <form action="" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <p>
+                    <button class="form-button" type="submit">Удалить</button>
+                    <a href="javascript:history.back()">Вернуться назад</a>
+                </p>
+            </form>
+        {% endif %}
+    {% else %}
+        <h1>Доступ запрещен!</h1>
+    {% endif %}
+{% endblock %}

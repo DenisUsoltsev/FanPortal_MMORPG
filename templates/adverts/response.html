@@ -1,0 +1,33 @@
+{% extends 'default.html' %}
+
+{% block content %}
+    <h1>{{ title }} на объявление:
+        <i><b><a href=" {{ response.advert.get_absolute_url }}">{{ response.advert.title }}</a></b></i></h1>
+    <div style="text-align: left;">
+        <p>{{ response.text }}</p>
+    </div>
+
+    <hr>
+    <p>
+        <b>Статус:</b>
+        <i>{% if response.is_accepted %}
+            Принято
+        {% else %}
+            Проверяется
+        {% endif %}</i>
+    </p>
+    <p>
+        <i>
+            <b>{{ response.time_create|date:'d M. Y h:m:s' }}</b>
+            <span style="color: gray;">(автор: {{ response.author }})</span>
+        </i>
+    </p>
+    <p class="link-read-post">
+        {% if request.user == response.author %}
+            {% if not response.is_accepted %}
+                <a href="{% url 'edit_response' response.id %}">Редактировать</a>
+            {% endif %}
+            <a href="{% url 'delete_response' response.id %}">Удалить</a>
+        {% endif %}
+    </p>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends 'default.html' %}
+
+{% block content %}
+<h1 align="center"><b>Страница откликов пользователя {{ request.user.username }}</b></h1>
+<hr>
+
+<form method="get">
+    {{ form.as_p }}
+    <input type="submit" class="form-button" value="Поиск">
+</form>
+
+<ul class="list-articles">
+    {% if responses %}
+    <hr>
+     <li><p align="center"><i>Количество найденных откликов: <u>{{responses|length}}</u></i></p></li>
+        {% for resp in responses %}
+            <li>
+                <div class="article-panel" id="status-{{ resp.id }}">
+                    <p class="first">Статус:
+                        <i>{% if resp.is_accepted %}
+                            Принято
+                        {% else %}
+                            Проверяется
+                        {% endif %}</i>
+                        | Автор: {{ resp.author }}
+                    </p>
+                    <p class="last">дата: {{ resp.time_create|date:"d-m-Y H:i:s" }}</p>
+                </div>
+                <p><b>Заголовок объявления:</b>
+                    <i><b><a href=" {{ resp.advert.get_absolute_url }}">{{ resp.advert.title }}</a></b></i></p>
+                <p id="response-{{ resp.id }}"
+                   data-full-text="Содержание отклика: {{ resp.text }}"
+                   data-short-text="Содержание отклика: {{ resp.text|slice:50 }}">
+                    <b>Содержание отклика:</b>
+                    {{ resp.text|slice:50 }}
+                    {% if resp.text|length > 50 %}
+                        <span class="more" onclick="showMore('{{ resp.id }}')">... подробнее</span>
+                    {% endif %}
+                </p>
+                <div class="clear"></div>
+                {% if resp.author != request.user %}
+                    {% if not resp.is_accepted  %}
+                        <form method="post" id="response-form-{{ resp.id }}" onsubmit="handleFormSubmit(event, '{{ resp.id }}')">
+                            {% csrf_token %}
+                            <input type="hidden" name="response_id" value="{{ resp.id }}">
+                            <input type="hidden" name="time_create" value="{{ resp.time_create|date:'d-m-Y H:i:s' }}">
+                            <input type="hidden" name="author" value="{{ resp.author }}">
+                            <input type="submit" class="form-button" name="accept" value="Принять">
+                            <input type="submit" class="form-button" name="decline" value="Отклонить">
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <p class="link-read-post">
+                        {% if not resp.is_accepted %}
+                            <a href="{% url 'edit_response' resp.id %}">Редактировать</a>
+                        {% endif %}
+                        <a href="{% url 'delete_response' resp.id %}">Удалить</a>
+                    </p>
+                {% endif %}
+            </li>
+        {% endfor %}
+    {% else %}
+        <li><h2>Откликов нет!</h2></li>
+    {% endif %}
+</ul>
+
+<script>
+    function showMore(responseId) {
+        const commentElement = document.getElementById(`response-${responseId}`);
+        const fullText = commentElement.getAttribute('data-full-text');
+        commentElement.textContent = fullText;
+        commentElement.innerHTML += '<span class="less" onclick="showLess(\'' + responseId + '\')">... кратко</span>';
+    }
+
+    function showLess(responseId) {
+        const commentElement = document.getElementById(`response-${responseId}`);
+        const shortText = commentElement.getAttribute('data-short-text');
+        commentElement.textContent = shortText;
+        commentElement.innerHTML += '<span class="more" onclick="showMore(\'' + responseId + '\')">... подробнее</span>';
+    }
+
+    function handleFormSubmit(event, responseId) {
+        event.preventDefault();
+
+        var form = document.getElementById('response-form-' + responseId);
+        var formData = new FormData(form);
+
+        var button = event.submitter;
+        formData.append(button.name, button.value);
+
+        fetch("{% url 'user_responses' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('status-' + responseId).innerHTML = data.status_html;
+                form.style.display = 'none';
+            }
+        })
+        .catch(error => console.log('Ошибка:', error));
+    }
+</script>
+
+
+
+{% endblock %}
+
+{% block navigation %}
+    {% include "paginate.html" %}
+{% endblock %}

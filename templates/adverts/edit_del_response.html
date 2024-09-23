@@ -1,0 +1,38 @@
+{% extends 'default.html' %}
+
+{% block breadcrumbs %}
+    {% if request.user == response.author %}
+        {% if del_mode %}
+            <h2>Вы действительно хотите удалить данный отклик?</h2>
+            <hr>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% if request.user == response.author %}
+        {% if not del_mode %}
+            <h1>{{ title }}</h1>
+            <form action="" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form }}
+                <div class="form-error">{{ form.non_field_errors }}</div>
+                <p>
+                    <button class="form-button" type="submit">Отправить</button>
+                    <a href="javascript:history.back()">Вернуться назад</a>
+                </p>
+            </form>
+        {% else %}
+            {{ response.preview }}
+            <form action="" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <p>
+                    <button class="form-button" type="submit">Удалить</button>
+                    <a href="javascript:history.back()">Вернуться назад</a>
+                </p>
+            </form>
+        {% endif %}
+    {% else %}
+        <h1>Доступ запрещен!</h1>
+    {% endif %}
+{% endblock %}

@@ -1,1 +1,1 @@
-# FanPortal_MMORPG
+# 📰Проект на Django «Доска объявлений» от Skillfactory🎓

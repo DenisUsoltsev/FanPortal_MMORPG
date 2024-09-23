@@ -1,0 +1,44 @@
+{% extends 'default.html' %}
+
+{% block content %}
+    <h1>{{ post.title }}</h1>
+    {% autoescape off %}
+        {{ post.text }}
+    {% endautoescape %}
+    <hr>
+    <h3>Отклики:</h3>
+    {% for resp in responses %}
+        <div class="article-panel">
+            <p class="first">
+                Автор отклика: {{ resp.author.username|default:"неизвестен" }}</p>
+            <p class="last">дата: {{ resp.time_create|date:"d-m-Y H:i:s" }}</p>
+        </div>
+        <p id="response-{{ resp.id }}"
+           data-full-text="{{ resp.text }}"
+           data-short-text="{{ resp.text|slice:50 }}">
+            {{ resp.text|slice:50 }}
+            {% if resp.text|length > 50 %}
+                <span class="more" onclick="showMore('{{ resp.id }}')">... подробнее</span>
+            {% endif %}
+        </p>
+    {% empty %}
+        Отклики отсутствуют.
+    {% endfor %}
+
+<script>
+    function showMore(responseId) {
+        const commentElement = document.getElementById(`response-${responseId}`);
+        const fullText = commentElement.getAttribute('data-full-text');
+        commentElement.textContent = fullText;
+        commentElement.innerHTML += '<span class="less" onclick="showLess(\'' + responseId + '\')">... кратко</span>';
+    }
+
+    function showLess(responseId) {
+        const commentElement = document.getElementById(`response-${responseId}`);
+        const shortText = commentElement.getAttribute('data-short-text');
+        commentElement.textContent = shortText;
+        commentElement.innerHTML += '<span class="more" onclick="showMore(\'' + responseId + '\')">... подробнее</span>';
+    }
+</script>
+
+{% endblock %}

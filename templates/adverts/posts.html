@@ -1,0 +1,60 @@
+{% extends 'default.html' %}
+
+{% block content %}
+{% if posts %}
+    {% if user.is_authenticated %}
+        {% if category %}
+            {% if is_subscribed %}
+                <form action="{% url 'unsubscribe_from_category' cat_slug=category.slug %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning">Отписаться от категории</button>
+                </form>
+            {% else %}
+                <form action="{% url 'subscribe_to_category' cat_slug=category.slug %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">Подписаться на категорию</button>
+                </form>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+{% endif %}
+<hr>
+
+<ul class="list-articles">
+    {% if posts %}
+        {% for p in posts %}
+            <li>
+                <div class="article-panel">
+                    <p class="first">
+                        Категория: <a href="{{ p.category.get_absolute_url }}">{{ p.category.name }}</a> |
+                        автор: {{ p.author.username|default:"неизвестен" }} |
+                        отклики: {{ p.response_count }}</p>
+                    {% if p.time_create == p.time_update %}
+                        <p class="last">дата: {{ p.time_create|date:"d-m-Y H:i:s" }}</p>
+                    {% else %}
+                        <p class="last">обновлено: {{ p.time_update|date:"d-m-Y H:i:s" }}</p>
+                    {% endif %}
+                </div>
+                <h3>{{ p.title }}</h3>
+                {{ p.preview }}
+<!--                {% autoescape off %}-->
+<!--                    {{ p.text|linebreaks|truncatewords:40 }}-->
+<!--                {% endautoescape %}-->
+                <div class="clear"></div>
+                <p class="link-read-post">
+                    {% if request.user != p.author %}
+                        <a href="{% url 'add_response' p.id %}">Оставить отклик</a>
+                    {% endif %}
+                    <a href="{{ p.get_absolute_url }}">Читать пост</a>
+                </p>
+            </li>
+        {% endfor %}
+    {% else %}
+        <li><h2>Публикаций нет!</h2></li>
+    {% endif %}
+</ul>
+{% endblock %}
+
+{% block navigation %}
+    {% include "paginate.html" %}
+{% endblock %}

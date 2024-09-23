@@ -1,0 +1,18 @@
+{% extends 'default.html' %}
+
+{% block content %}
+    <h1>{{ title }}</h1>
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.media }}
+        <div class="form-error">{{ form.non_field_errors }}</div>
+        {% for f in form %}
+            <p><label class="form-label" for="{{ f.id_for_label }}">{{ f.label }}</label>{{ f }}</p>
+            <div class="form-error">{{ f.errors }}</div>
+        {% endfor %}
+        <p>
+            <button class="form-button" type="submit">Отправить</button>
+            <a href="javascript:history.back()">Вернуться назад</a>
+        </p>
+    </form>
+{% endblock %}
